@@ -4,7 +4,11 @@ A production-style **Self-RAG** demo for cloud operations and incident response.
 
 The project also demonstrates **LangGraph SQLite persistence memory** so follow-up questions can reuse the same incident context through a stable `thread_id`.
 
+![CloudOps Sentinel Incident Response Console](docs/screenshot.png)
+
 ## Architecture
+
+![CloudOps Sentinel Architecture Diagram](docs/architecture_diagram.png)
 
 ```text
 User Incident / Follow-up
