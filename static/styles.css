@@ -1,6 +1,6 @@
 :root{
   --bg:#090d0d;--panel:#101616;--panel2:#141c1b;--line:#26302f;--muted:#7f9290;--text:#edf5f3;
-  --lime:#b9ff55;--lime2:#7fca24;--cyan:#5ce1d3;--warn:#ffb86b;--danger:#ff7d7d;
+  --lime:#aa55ff;--lime2:#6c24ca;--cyan:#5ce1d3;--warn:#ffb86b;--danger:#ff7d7d;
   font-family:"DM Sans",system-ui,sans-serif;color:var(--text);background:var(--bg)
 }
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg)}body{min-height:100vh;overflow:hidden}
