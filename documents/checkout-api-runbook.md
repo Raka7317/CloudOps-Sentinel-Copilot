@@ -18,3 +18,38 @@ Do not delete pods repeatedly as a first response. Preserve logs and events need
 
 ## Escalation
 Escalate to the platform team when the load balancer cannot reach healthy checkout-api pods even though readiness checks are passing. Escalate to the database team when connection-pool errors continue after application rollback.
+
+
+
+
+             502 ERROR
+                 │
+                 ▼
+       Did deployment happen?
+                 │
+                 ▼
+       Check Kubernetes pods
+                 │
+                 ▼
+       Check readiness probes
+                 │
+                 ▼
+        Check application logs
+                 │
+                 ▼
+     Check env vars + secrets
+                 │
+                 ▼
+     Check Payment + PostgreSQL
+                 │
+                 ▼
+       Is new release likely bad?
+            /             \
+          YES              NO
+           │                │
+           ▼                ▼
+    Error >5% for      Continue diagnosis
+      5 minutes
+           │
+           ▼
+        ROLLBACK

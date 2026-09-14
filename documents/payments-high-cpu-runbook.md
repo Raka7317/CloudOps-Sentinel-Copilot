@@ -14,3 +14,51 @@ Start this procedure when average CPU utilization for the payments service remai
 
 ## Safety note
 Do not disable CPU limits or remove production resource controls during an incident without platform-team approval.
+
+
+
+             HIGH CPU
+                 │
+                 ▼
+        CPU >85% for 10 min?
+        OR CPU + latency ↑
+                 │
+                 ▼
+        Check traffic volume
+                 │
+                 ▼
+       Compare replica CPU
+                 │
+          ┌──────┴──────┐
+          ▼             ▼
+     One replica    All replicas
+        hot?           high?
+          │             │
+          ▼             ▼
+   Investigate       Check traffic
+    that replica     & capacity
+          │             │
+          └──────┬──────┘
+                 ▼
+       Check latency/errors/
+       request rate/queue
+                 │
+                 ▼
+       Check deployments &
+        feature flags
+                 │
+                 ▼
+          Check logs
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+   Service healthy?    Bad deployment?
+        │                 │
+       YES               YES
+        │                 │
+        ▼                 ▼
+      SCALE            ROLLBACK
+        │                 │
+        └────────┬────────┘
+                 ▼
+          Verify recovery
