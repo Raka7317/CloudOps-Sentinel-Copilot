@@ -22,7 +22,7 @@ COPY . .
 # NOTE: on Render's default web service these are on an EPHEMERAL disk and
 # reset on every deploy/restart. Attach a Render Disk mounted at /app/data
 # (and /app/uploads if you need uploads to persist) if you need this data
-# to survive restarts. Incident data lives in Postgres (DATABASE_URL) and
+# to survive restarts. Incident data lives in Postgres (DATABASE_URL) and url
 # is unaffected by this.
 RUN mkdir -p /app/data /app/uploads \
     && useradd -m -u 1000 appuser \
