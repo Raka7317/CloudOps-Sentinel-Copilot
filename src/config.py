@@ -33,6 +33,19 @@ class Settings(BaseModel):
     max_web_rewrites: int = int(os.getenv("MAX_WEB_REWRITES", "2"))
     database_path: str = os.getenv("DATABASE_PATH", "data/audit.db")
 
+    # Incidents (Postgres)
+    database_url: str = os.getenv("DATABASE_URL", "")
+
+    # Jira
+    jira_base_url: str = os.getenv("JIRA_BASE_URL", "").rstrip("/")
+    jira_email: str = os.getenv("JIRA_EMAIL", "")
+    jira_api_token: str = os.getenv("JIRA_API_TOKEN", "")
+    jira_project_key: str = os.getenv("JIRA_PROJECT_KEY", "")
+
+    # Slack
+    slack_bot_token: str = os.getenv("SLACK_BOT_TOKEN", "")
+    slack_channel_id: str = os.getenv("SLACK_CHANNEL_ID", "")
+
     @property
     def database_file(self) -> Path:
         p = Path(self.database_path)

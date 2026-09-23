@@ -52,6 +52,16 @@ async function ask(){
   finally{send.disabled=false;q.focus();}
 }
 
+document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.style.display='none');
+    document.getElementById(btn.dataset.view).style.display='block';
+    if(btn.dataset.view==='incidentsView') window.loadIncidents?.();
+  });
+});
+
 send.addEventListener('click',ask);
 q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask();}});
 starters.addEventListener('click',e=>{const b=e.target.closest('button[data-q]');if(!b)return;q.value=b.dataset.q;q.focus();});

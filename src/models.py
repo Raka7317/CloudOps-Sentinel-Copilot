@@ -27,3 +27,21 @@ class UploadResponse(BaseModel):
     filename: str
     chunks_indexed: int
     namespace: str
+
+class IncidentCreate(BaseModel):
+    title: str = Field(..., min_length=2, max_length=300)
+    description: str = ""
+
+class IncidentStatusUpdate(BaseModel):
+    status: Literal["open", "in_progress", "review", "resolved"]
+
+class IncidentOut(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = ""
+    status: str
+    jira_key: Optional[str] = None
+    jira_url: Optional[str] = None
+    slack_ts: Optional[str] = None
+    rag_answer: Optional[str] = None
+    rag_route: Optional[str] = None

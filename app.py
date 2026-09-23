@@ -7,10 +7,13 @@ from fastapi.templating import Jinja2Templates
 from fastapi.concurrency import run_in_threadpool
 
 
-from src.models import ChatRequest, ChatResponse, UploadResponse
+from src.models import ChatRequest, ChatResponse, UploadResponse, IncidentCreate, IncidentStatusUpdate, IncidentOut
 from src.self_rag import run_self_rag
 from src.ingestion import ingest_file, namespace, SUPPORTED
 from src.db import init_db, save_audit, latest_audits
+from src.incidents_db import init_incidents_db, create_incident, list_incidents, get_incident, update_status, save_rag_answer
+from src.jira_client import create_ticket, transition_status
+from src.slack_client import post_incident_message, post_status_update
 from dotenv import load_dotenv
 
 
@@ -34,6 +37,7 @@ templates = Jinja2Templates(directory=str(ROOT / "templates"))
 @app.on_event("startup")
 def startup():
     init_db()
+    init_incidents_db()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -79,6 +83,57 @@ async def upload(file: UploadFile = File(...)):
 @app.get("/api/audits")
 def audits(limit: int = 20):
     return latest_audits(min(max(limit, 1), 100))
+
+
+@app.post("/api/incidents", response_model=IncidentOut)
+async def create_incident_endpoint(payload: IncidentCreate):
+    try:
+        ticket = await run_in_threadpool(create_ticket, payload.title, payload.description)
+        slack_ts = await run_in_threadpool(post_incident_message, payload.title, payload.description, ticket["url"])
+        row = await run_in_threadpool(
+            create_incident, payload.title, payload.description, ticket["key"], ticket["url"], slack_ts
+        )
+        return IncidentOut(**row)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/incidents", response_model=list[IncidentOut])
+def list_incidents_endpoint(limit: int = 50):
+    return [IncidentOut(**r) for r in list_incidents(min(max(limit, 1), 200))]
+
+
+@app.patch("/api/incidents/{incident_id}/status", response_model=IncidentOut)
+async def update_incident_status(incident_id: int, payload: IncidentStatusUpdate):
+    inc = await run_in_threadpool(get_incident, incident_id)
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    row = await run_in_threadpool(update_status, incident_id, payload.status)
+    if row.get("jira_key"):
+        try:
+            await run_in_threadpool(transition_status, row["jira_key"], payload.status)
+        except Exception:
+            pass  # don't fail the request just because Jira's workflow didn't match
+    try:
+        await run_in_threadpool(post_status_update, row.get("slack_ts"), row["title"], payload.status)
+    except Exception:
+        pass
+    return IncidentOut(**row)
+
+
+@app.post("/api/incidents/{incident_id}/resolve", response_model=IncidentOut)
+async def resolve_incident_endpoint(incident_id: int):
+    inc = await run_in_threadpool(get_incident, incident_id)
+    if not inc:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    try:
+        result = await run_in_threadpool(
+            run_self_rag, inc["description"] or inc["title"], f"incident-{incident_id}"
+        )
+        row = await run_in_threadpool(save_rag_answer, incident_id, result.get("answer", ""), result.get("route", ""))
+        return IncidentOut(**row)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

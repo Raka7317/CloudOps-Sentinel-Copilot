@@ -20,7 +20,8 @@
 
       <div class="rail-label">CONTROL CENTER</div>
       <nav class="nav">
-        <button class="nav-item active"><span>◈</span> Incident Copilot</button>
+        <button class="nav-item active" data-view="copilotView"><span>◈</span> Incident Copilot</button>
+        <button class="nav-item" data-view="incidentsView"><span>☰</span> Incidents</button>
         <button class="nav-item"><span>▱</span> Runbook Vault</button>
         <button class="nav-item"><span>⌁</span> Audit Trail</button>
       </nav>
@@ -46,6 +47,7 @@
     </aside>
 
     <main class="workspace">
+    <div id="copilotView" class="view">
       <header class="topbar">
         <div>
           <div class="eyebrow">PRODUCTION RELIABILITY</div>
@@ -94,8 +96,35 @@
           <div class="composer-note"><span>SQLite conversation memory enabled</span><span>•</span><span>Private evidence prioritized</span><span>•</span><span>Internet search activates only when needed</span></div>
         </div>
       </section>
+    </div>
+
+    <div id="incidentsView" class="view" style="display:none">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">PRODUCTION RELIABILITY</div>
+          <h1>Incidents</h1>
+          <p>Report a production issue to open a Jira ticket and notify Slack, track status, and get a Self-RAG suggested resolution.</p>
+        </div>
+      </header>
+
+      <section class="console incident-console">
+        <div class="console-head"><div><span class="terminal-dot"></span><strong>NEW INCIDENT</strong></div></div>
+        <div class="incident-form">
+          <input id="incTitle" type="text" placeholder="Incident title (e.g. Checkout API 502 after deploy)" />
+          <textarea id="incDesc" rows="3" placeholder="Describe the symptom, error, or alert..."></textarea>
+          <button id="incCreateBtn" class="secondary-btn">Create Ticket + Notify Slack</button>
+          <div id="incCreateStatus" class="status"></div>
+        </div>
+      </section>
+
+      <section class="console incident-console">
+        <div class="console-head"><div><span class="terminal-dot"></span><strong>OPEN INCIDENTS</strong></div><button id="incRefreshBtn" class="new-session-btn">Refresh</button></div>
+        <div id="incidentList" class="incident-list"><div class="status">Loading…</div></div>
+      </section>
+    </div>
     </main>
   </div>
 <script src="/static/app.js"></script>
+<script src="/static/incidents.js"></script>
 </body>
 </html>
