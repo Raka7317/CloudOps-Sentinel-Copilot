@@ -1,6 +1,11 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
+
+# Diagnostic: confirms in the build log which Python version is actually
+# running this build. If this still prints 3.11.x, Render is not using
+# this Dockerfile (stale cache, wrong path, or a non-Docker runtime).
+RUN python --version
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -22,7 +27,7 @@ COPY . .
 # NOTE: on Render's default web service these are on an EPHEMERAL disk and
 # reset on every deploy/restart. Attach a Render Disk mounted at /app/data
 # (and /app/uploads if you need uploads to persist) if you need this data
-# to survive restarts. Incident data lives in Postgres (DATABASE_URL) and url
+# to survive restarts. Incident data lives in Postgres (DATABASE_URL) and
 # is unaffected by this.
 RUN mkdir -p /app/data /app/uploads \
     && useradd -m -u 1000 appuser \
