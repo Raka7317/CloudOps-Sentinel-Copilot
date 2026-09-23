@@ -1,0 +1,73 @@
+databases:
+  - name: cloudops-sentinel-db
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: cloudops-sentinel
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      # --- Postgres (incidents) — auto-wired from the database above ---
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cloudops-sentinel-db
+          property: connectionString
+
+      # --- OpenAI ---
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5-mini
+      - key: EMBEDDING_MODEL
+        value: text-embedding-3-large
+      - key: EMBEDDING_DIMENSION
+        value: "3072"
+
+      # --- Pinecone ---
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_INDEX_NAME
+        value: cloudops-sentinel-openai-self-rag
+      - key: PINECONE_NAMESPACE
+        value: incident-runbooks
+      - key: PINECONE_CLOUD
+        value: aws
+      - key: PINECONE_REGION
+        value: us-east-1
+
+      # --- Tavily (internet search) ---
+      - key: TAVILY_API_KEY
+        sync: false
+
+      # --- Self-RAG controls ---
+      - key: TOP_K
+        value: "5"
+      - key: MAX_SUPPORT_RETRIES
+        value: "2"
+      - key: MAX_RETRIEVAL_REWRITES
+        value: "2"
+      - key: MAX_WEB_REWRITES
+        value: "2"
+      - key: DATABASE_PATH
+        value: data/audit.db
+
+      # --- Jira ---
+      - key: JIRA_BASE_URL
+        sync: false
+      - key: JIRA_EMAIL
+        sync: false
+      - key: JIRA_API_TOKEN
+        sync: false
+      - key: JIRA_PROJECT_KEY
+        sync: false
+
+      # --- Slack ---
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_CHANNEL_ID
+        sync: false

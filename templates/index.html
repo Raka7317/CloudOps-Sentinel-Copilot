@@ -21,6 +21,7 @@
       <div class="rail-label">CONTROL CENTER</div>
       <nav class="nav">
         <button class="nav-item active" data-view="copilotView"><span>◈</span> Incident Copilot</button>
+        <button class="nav-item" data-view="dashboardView"><span>▤</span> Dashboard</button>
         <button class="nav-item" data-view="incidentsView"><span>☰</span> Incidents</button>
         <button class="nav-item"><span>▱</span> Runbook Vault</button>
         <button class="nav-item"><span>⌁</span> Audit Trail</button>
@@ -98,6 +99,34 @@
       </section>
     </div>
 
+    <div id="dashboardView" class="view" style="display:none">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">PRODUCTION RELIABILITY</div>
+          <h1>Dashboard</h1>
+          <p>Live status summary of every incident — counts, breakdown, and the full roster at a glance.</p>
+        </div>
+        <button id="dashRefreshBtn" class="new-session-btn">Refresh</button>
+      </header>
+
+      <div id="dashStats" class="dash-stats">
+        <article><span>◷</span><div><strong id="dashTotal">–</strong><small>Total</small></div></article>
+        <article><span>●</span><div><strong id="dashOpen">–</strong><small>Open</small></div></article>
+        <article><span>●</span><div><strong id="dashProgress">–</strong><small>In progress</small></div></article>
+        <article><span>●</span><div><strong id="dashReview">–</strong><small>Review</small></div></article>
+        <article><span>●</span><div><strong id="dashResolved">–</strong><small>Resolved</small></div></article>
+      </div>
+
+      <div id="dashBreakdown" class="dash-breakdown"></div>
+
+      <section class="console incident-console">
+        <div class="console-head"><div><span class="terminal-dot"></span><strong>ALL INCIDENTS</strong></div></div>
+        <div id="dashTable" class="dash-table">
+          <div class="status">Loading…</div>
+        </div>
+      </section>
+    </div>
+
     <div id="incidentsView" class="view" style="display:none">
       <header class="topbar">
         <div>
@@ -126,5 +155,6 @@
   </div>
 <script src="/static/app.js?v=3"></script>
 <script src="/static/incidents.js?v=3"></script>
+<script src="/static/dashboard.js?v=1"></script>
 </body>
 </html>

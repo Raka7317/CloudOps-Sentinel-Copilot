@@ -102,6 +102,7 @@ document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
     document.querySelectorAll('.view').forEach(v=>v.style.display='none');
     document.getElementById(btn.dataset.view).style.display='flex';
     if(btn.dataset.view==='incidentsView') window.loadIncidents?.();
+    if(btn.dataset.view==='dashboardView') window.loadDashboard?.();
   });
 });
 
