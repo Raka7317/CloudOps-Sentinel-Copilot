@@ -10,13 +10,19 @@ function escI(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 
 function incidentCard(inc){
   const opts = STATUSES.map(s=>`<option value="${s}" ${s===inc.status?'selected':''}>${s.replace('_',' ')}</option>`).join('');
+  const answerBlock = inc.rag_answer
+    ? `<div class="incident-answer-wrap">
+         <div class="incident-answer-head"><strong>Self-RAG suggestion</strong><button type="button" class="toggle-answer-btn inc-toggle-answer-btn">Hide answer</button></div>
+         <div class="incident-answer">${formatAnswer(inc.rag_answer)}</div>
+       </div>`
+    : `<button class="inc-resolve-btn new-session-btn">Get Self-RAG suggestion</button>`;
   return `<div class="incident-card" data-id="${inc.id}">
     <div class="incident-top">
       <strong>${escI(inc.title)}</strong>
       ${inc.jira_url ? `<a href="${escI(inc.jira_url)}" target="_blank" rel="noopener">${escI(inc.jira_key||'Jira ticket')} ↗</a>` : ''}
     </div>
     <p class="incident-desc">${escI(inc.description||'')}</p>
-    ${inc.rag_answer ? `<div class="incident-answer"><strong>Self-RAG suggestion:</strong> ${escI(inc.rag_answer)}</div>` : `<button class="inc-resolve-btn new-session-btn">Get Self-RAG suggestion</button>`}
+    ${answerBlock}
     <div class="incident-bottom">
       <select class="inc-status">${opts}</select>
       <span class="status-tag status-${inc.status}">${inc.status.replace('_',' ')}</span>
@@ -38,6 +44,14 @@ async function loadIncidents(){
 window.loadIncidents = loadIncidents;
 
 incidentList.addEventListener('click', async (e)=>{
+  const toggleBtn = e.target.closest('.inc-toggle-answer-btn');
+  if(toggleBtn){
+    const wrap = toggleBtn.closest('.incident-answer-wrap');
+    const body = wrap.querySelector('.incident-answer');
+    const nowHidden = body.classList.toggle('collapsed');
+    toggleBtn.textContent = nowHidden ? 'Show answer' : 'Hide answer';
+    return;
+  }
   const btn = e.target.closest('.inc-resolve-btn');
   if(!btn) return;
   const card = btn.closest('.incident-card');

@@ -17,12 +17,55 @@ function renderSession(){ if(sessionId) sessionId.textContent='MEMORY / '+thread
 renderSession();
 
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
-function addMessage(role, html, meta=''){
+
+// Turn a plain/markdown-ish answer string into HTML: real numbered/bulleted
+// lists (one item per line) instead of one flat paragraph.
+function formatAnswer(raw=''){
+  let text = String(raw).replace(/\r\n/g,'\n');
+  // If the model ran list markers together on one line without newlines,
+  // force a break before each marker so every point lands on its own line.
+  text = text.replace(/([^\n])\s(?=\d{1,2}[.)]\s+\S)/g, '$1\n');
+  text = text.replace(/([^\n])\s(?=[-*•]\s+\S)/g, '$1\n');
+
+  const esced = esc(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  const lines = esced.split('\n');
+  let html = '', listType = null, buf = [];
+  const flush = () => {
+    if(buf.length){ html += `<${listType}>${buf.map(li=>`<li>${li}</li>`).join('')}</${listType}>`; }
+    buf = []; listType = null;
+  };
+  for(const rawLine of lines){
+    const line = rawLine.trim();
+    if(!line){ flush(); continue; }
+    const num = line.match(/^(\d{1,2})[.)]\s+(.*)/);
+    const bul = line.match(/^[-*•]\s+(.*)/);
+    if(num){ if(listType!=='ol') flush(); listType='ol'; buf.push(num[2]); }
+    else if(bul){ if(listType!=='ul') flush(); listType='ul'; buf.push(bul[1]); }
+    else { flush(); html += `<p>${line}</p>`; }
+  }
+  flush();
+  return html || `<p>${esced}</p>`;
+}
+
+function addMessage(role, html, meta='', collapsible=false){
   const el=document.createElement('div'); el.className=`message ${role}`;
   const avatar=role==='assistant'?'<div class="avatar">S</div>':'';
   const label=role==='assistant'?'CLOUDOPS SENTINEL':'ON-CALL ENGINEER';
-  el.innerHTML=`${avatar}<div class="message-body"><div class="message-label">${label}</div><div class="bubble">${html}</div>${meta}</div>`;
-  messages.appendChild(el); messages.scrollTop=messages.scrollHeight; return el;
+  const toggle=collapsible?'<button type="button" class="toggle-answer-btn">Hide answer</button>':'';
+  el.innerHTML=`${avatar}<div class="message-body"><div class="message-label"><span>${label}</span>${toggle}</div><div class="bubble answer-bubble">${html}</div>${meta}</div>`;
+  messages.appendChild(el); messages.scrollTop=messages.scrollHeight;
+  if(collapsible){
+    const btn=el.querySelector('.toggle-answer-btn');
+    const bubble=el.querySelector('.answer-bubble');
+    btn.addEventListener('click',()=>{
+      const nowHidden=bubble.classList.toggle('collapsed');
+      btn.textContent=nowHidden?'Show answer':'Hide answer';
+    });
+  }
+  return el;
 }
 function loadingMarkup(){return '<span class="thinking">Running Self-RAG <i></i><i></i><i></i></span>';}
 function pretty(v=''){return String(v).replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase());}
@@ -47,7 +90,7 @@ async function ask(){
     }
     if(data.trace?.length) meta+=`<div class="trace"><details><summary>Inspect Self-RAG workflow trace</summary><ol>${data.trace.map(t=>`<li>${esc(t)}</li>`).join('')}</ol></details></div>`;
     meta+='</div>';
-    addMessage('assistant',esc(data.answer),meta);
+    addMessage('assistant',formatAnswer(data.answer),meta,true);
   }catch(e){loading.remove();addMessage('assistant','Request failed: '+esc(e.message));}
   finally{send.disabled=false;q.focus();}
 }
@@ -57,7 +100,7 @@ document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
     document.querySelectorAll('.nav-item[data-view]').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.view').forEach(v=>v.style.display='none');
-    document.getElementById(btn.dataset.view).style.display='block';
+    document.getElementById(btn.dataset.view).style.display='flex';
     if(btn.dataset.view==='incidentsView') window.loadIncidents?.();
   });
 });

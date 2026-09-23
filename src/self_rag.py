@@ -129,7 +129,7 @@ def route_after_decide(state: RAGState) -> Literal["direct", "retrieve"]:
 
 def generate_direct(state: RAGState):
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Answer briefly from general technical knowledge only. Do not invent organization-specific infrastructure, runbooks, credentials, incident history, or deployment procedures."),
+        ("system", "Answer briefly from general technical knowledge only. Do not invent organization-specific infrastructure, runbooks, credentials, incident history, or deployment procedures. Formatting: when the answer has more than one step, check, or distinct point, write it as a markdown list (numbered for sequential steps, '-' bullets for non-sequential items) with exactly one item per line and a real line break between items. Never merge multiple steps or points into one paragraph or one line."),
         ("human", "{question}"),
     ])
     ans = _llm().invoke(prompt.format_messages(question=state["question"])).content
@@ -213,7 +213,7 @@ def web_search(state: RAGState):
 def generate_from_context(state: RAGState):
     context = _format_context(state.get("relevant_docs", []))
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are CloudOps Sentinel, an enterprise cloud operations and incident-response copilot. Answer using only the supplied evidence. Prefer private runbooks, SOPs, architecture notes, and postmortems when present. If the evidence comes from the web, clearly label it as external guidance and never present it as an organization-specific procedure. Do not invent infrastructure facts, credentials, commands, or incident history. Provide concise, actionable troubleshooting guidance and preserve any cautions contained in the evidence."),
+        ("system", "You are CloudOps Sentinel, an enterprise cloud operations and incident-response copilot. Answer using only the supplied evidence. Prefer private runbooks, SOPs, architecture notes, and postmortems when present. If the evidence comes from the web, clearly label it as external guidance and never present it as an organization-specific procedure. Do not invent infrastructure facts, credentials, commands, or incident history. Provide concise, actionable troubleshooting guidance and preserve any cautions contained in the evidence. Formatting: when the answer has more than one step, check, or distinct point, write it as a markdown list (numbered for sequential steps, '-' bullets for non-sequential items) with exactly one item per line and a real line break between items. Never merge multiple steps or points into one paragraph or one line."),
         ("human", "Question:\n{question}\n\nEvidence:\n{context}"),
     ])
     ans = _llm().invoke(prompt.format_messages(question=state["question"], context=context)).content
@@ -239,7 +239,7 @@ def route_after_support(state: RAGState) -> Literal["usefulness", "revise"]:
 
 def revise_answer(state: RAGState):
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Rewrite the answer so every factual claim is directly supported by the provided evidence. Remove unsupported interpretation and speculation. Still answer the question naturally; do not mention this verification process."),
+        ("system", "Rewrite the answer so every factual claim is directly supported by the provided evidence. Remove unsupported interpretation and speculation. Still answer the question naturally; do not mention this verification process. Formatting: when the answer has more than one step, check, or distinct point, write it as a markdown list (numbered for sequential steps, '-' bullets for non-sequential items) with exactly one item per line and a real line break between items. Never merge multiple steps or points into one paragraph or one line."),
         ("human", "Question:\n{question}\n\nCurrent answer:\n{answer}\n\nEvidence:\n{context}"),
     ])
     ans = _llm().invoke(prompt.format_messages(question=state["question"], answer=state.get("answer", ""), context=state.get("context", ""))).content
