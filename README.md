@@ -1357,13 +1357,6 @@ CloudOps_Sentinel_Customer_Problem_Statement.pdf
 
 **Rakesh Kumar**
 
-AI / ML Engineer | GenAI | Agentic AI | CloudOps
-
-GitHub: [Add your GitHub profile]
-
-LinkedIn: [Add your LinkedIn profile]
-
-Portfolio: [Add your portfolio]
 
 ---
 
